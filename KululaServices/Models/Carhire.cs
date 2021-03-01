@@ -14,7 +14,7 @@ namespace KululaServices.Models
         public bool IsReturn { get; set; }
         public DateTime PickDate { get; set; }
         public bool PaymentStatus { get; set; }
-
+        public  string memberIDC { get; set; }
         //CarModel Foreign Key
         public string CarName { get; set; }
     }

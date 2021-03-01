@@ -8,7 +8,7 @@ namespace KululaServices.Models
 {
     public class kululaContext:DbContext
     {
-        public kululaContext() : base("DefaultConnection")
+        public kululaContext() : base("kululaServices")
         {
 
         }
@@ -16,7 +16,7 @@ namespace KululaServices.Models
         public DbSet<Carhire> Carhires { get; set; }
         public DbSet<CarModel> CarModels { get; set; }
         public DbSet<Payment> Payments { get; set; }
-        public DbSet<MemberPayment> MemberPayments { get; set; }
+        public DbSet<MemberDiscount> MemberDiscounts { get; set; }
 
         public DbSet<Aircraft> Aircrafts { get; set; }
         public DbSet<SeatBooking> SeatBookings { get; set; }
@@ -26,6 +26,9 @@ namespace KululaServices.Models
         // public DbSet<Traveller> Travellers { get; set; }
     }
 }
-//Enable-Migrations -ContextTypeName kululaContext -MigrationsDirectory Migrations\kulula_V1
-//add-migration -ConfigurationTypeName KululaServices.Migrations.kulula_V1.Configuration "InitialCreate" 
-//update-database -ConfigurationTypeName KululaServices.Migrations.kulula_V1.Configuration 
+//Enable-Migrations -ContextTypeName kululaContext -MigrationsDirectory Migrations\kulula_V4
+//add-migration -ConfigurationTypeName KululaServices.Migrations.kulula_V4.Configuration "InitialCreate" 
+//update-database -ConfigurationTypeName KululaServices.Migrations.kulula_V4.Configuration 
+/* Enable-Migrations -ContextTypeName ApplicationDbContext -MigrationsDirectory Migrations\Identity
+add-migration -ConfigurationTypeName KululaServices.Migrations.Identity.Configuration "InitialIdentity"
+update-database -ConfigurationTypeName KululaServices.Migrations.Identity.Configuration */

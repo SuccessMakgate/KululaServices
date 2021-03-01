@@ -14,7 +14,8 @@ namespace KululaServices.Models
         public DateTime returnDate { get; set; }
         public bool IsReturn { get; set; }
         public int NumPeople { get; set; }
-
+        public bool IsScheduleFound { get; set; }
+        public string memberIDF { get; set; }
         public int FlightScheduleId { get; set; }//FK
         public virtual ICollection<FlightSchedule> MatchedSchedules { get; set; }
 

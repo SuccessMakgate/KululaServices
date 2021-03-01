@@ -19,14 +19,17 @@ namespace KululaServices.Models
         public bool IsSeatBook { get; set; }
 
     }
-    public class MemberPayment
+ 
+    public class MemberDiscount
     {
         [Key]
-        public DateTime TransactionDate { get; set; }
+        public string DiscountRef { get; set; }
+        public string MembersEmail { get; set; }
+        public DateTime TransnDate { get; set; }
         public double discount { get; set; }
         public int kululaPoints { get; set; }
         public int PaymentId { get; set; }//Fk
-        public string Email { get; set; }//Foreign Key
-        public Client ClientPay { get; set; }
+
     }
 }
+

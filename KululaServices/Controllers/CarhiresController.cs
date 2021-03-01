@@ -1,9 +1,11 @@
 ﻿using KululaServices.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
 
@@ -13,6 +15,26 @@ namespace KululaServices.Controllers
     {
         private kululaContext dbCarhire = new kululaContext();
 
+        //----------------------------------------------------------------------------Carhires--------------------------------------------------------------------------------
+        //*******************************************Post Carhire *************************************************************************
+        // POST: api/Carhires
+        [ResponseType(typeof(Carhire))]
+        public IHttpActionResult PostCarhire(Carhire carhire)
+        {
+            string CurrentUser = "Guest";
+            if (HttpContext.Current.User.Identity.Name != null) CurrentUser = HttpContext.Current.User.Identity.Name.ToString();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            List<CarModel> carmodel = new List<CarModel>();
+
+            carhire.memberIDC = CurrentUser;
+            dbCarhire.Carhires.Add(carhire);
+            dbCarhire.SaveChanges();
+
+            return CreatedAtRoute("DefaultApi", new { id = carhire.carHireId }, carhire);
+        }
         //*******************************************Get List of car Hired *************************************************************************
         // GET: api/Carhires
         public IQueryable<Carhire> GetCarhires()
@@ -25,34 +47,102 @@ namespace KululaServices.Controllers
         [ResponseType(typeof(Carhire))]
         public IHttpActionResult GetCarhire(int id)
         {
-            Carhire carhire = dbCarhire.Carhires.Find(id);
-            if (carhire == null)
+           
+            int MaxRow = dbCarhire.Carhires.Count() - 1;
+            List<Carhire> allCarhires = new List<Carhire>();
+            allCarhires = dbCarhire.Carhires.ToList();
+            Carhire currentCarhire = new Carhire();
+            currentCarhire = allCarhires.ElementAtOrDefault(MaxRow);
+            int brk = 0;
+            if (currentCarhire.PaymentStatus)
+            {
+                return Ok(currentCarhire);
+            }
+
+            return StatusCode(HttpStatusCode.NoContent);
+
+
+        }
+
+
+        //----------------------------------------------------------------------------Car model--------------------------------------------------------------------------------
+        //*************************************************************Add Carmodel***************************************************************
+        [Route("api/CarModels")]
+        [ResponseType(typeof(CarModel))]
+        public HttpResponseMessage PostCarModel()
+        {
+            string imageName = null;
+            bool leatherSeat = false, airbag = false, radio_Cd = false;
+
+            var httpReququest = HttpContext.Current.Request;
+
+            var postedFile = httpReququest.Files["Image"];
+            
+
+
+            imageName = Path.GetFileNameWithoutExtension(postedFile.FileName);
+            imageName = imageName + DateTime.Now.ToString("yymmssfff") + Path.GetExtension(postedFile.FileName);
+            var filePath = HttpContext.Current.Server.MapPath("~/Image/" + imageName);
+            postedFile.SaveAs(filePath);
+            if (bool.TryParse(httpReququest["AirBag"], out airbag)) airbag = true;
+            if (bool.TryParse(httpReququest["LeatherSeat"], out leatherSeat)) leatherSeat = true;
+            if (bool.TryParse(httpReququest["Radio_Cd"], out radio_Cd)) radio_Cd = true;
+            CarModel car = new CarModel()
+            {
+                carImage = imageName,
+                CarName = httpReququest["CarName"],
+                CarColour = httpReququest["CarColour"],
+                YearModel = httpReququest["YearModel"],
+                AirBag = airbag,
+                LeatherSeat = leatherSeat,
+                Radio_Cd = radio_Cd,
+                price = Int32.Parse(httpReququest["price"])
+            };
+            
+            var v=dbCarhire.Carhires.Where(a => a.CarName == car.carImage).FirstOrDefault();
+            if (v != null) return Request.CreateResponse(HttpStatusCode.BadRequest);
+            dbCarhire.CarModels.Add(car);
+            dbCarhire.SaveChanges();
+            
+            return Request.CreateResponse(HttpStatusCode.Created);
+
+        }
+        //*************************************************************Get list  Carmodel***************************************************************
+        // GET: api/CarModels
+        [Route("api/CarModels")]
+        public IQueryable<CarModel> GetCarModels()
+        {
+            return dbCarhire.CarModels;
+        }
+        //*************************************************************Get Carmodel***************************************************************
+        // GET: api/CarModels/5
+        [Route("api/CarModels/{id}")]
+        [ResponseType(typeof(CarModel))]
+        public IHttpActionResult GetCarModel(string id)
+        {
+            CarModel carModel = dbCarhire.CarModels.Find(id);
+            if (carModel == null)
             {
                 return NotFound();
             }
 
-            return Ok(carhire);
+            return Ok(carModel);
         }
 
+       
 
-        //*******************************************Post Carhire *************************************************************************
-        // POST: api/Carhires
-        [ResponseType(typeof(Carhire))]
-        public IHttpActionResult PostCarhire(Carhire carhire)
+
+        //*******************************************Current Carhire *************************************************************************
+        private Carhire currentCarhire()
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            List<CarModel> carmodel = new List<CarModel>();
+            int MaxRow = dbCarhire.Carhires.Count() - 1;
+            List<Carhire> allCarhires = new List<Carhire>();
+            allCarhires = dbCarhire.Carhires.ToList();
+            Carhire currentCarhire = new Carhire();
+            currentCarhire = allCarhires.ElementAtOrDefault(MaxRow);
 
-
-            dbCarhire.Carhires.Add(carhire);
-            dbCarhire.SaveChanges();
-
-            return CreatedAtRoute("DefaultApi", new { id = carhire.carHireId }, carhire);
+            return currentCarhire;
         }
-
         private bool CarhireExists(int id)
         {
             return dbCarhire.Carhires.Count(e => e.carHireId == id) > 0;

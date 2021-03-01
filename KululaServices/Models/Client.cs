@@ -9,7 +9,7 @@ namespace KululaServices.Models
     public class Client
     {
 
-        [Key]
+        public int ClientID { get; set; }
         public string Email { get; set; }
         public string IdNumber { get; set; }
         public string FirstName { get; set; }
@@ -19,7 +19,7 @@ namespace KululaServices.Models
         public string PhoneNo { get; set; }
         
 
-        public List<MemberPayment> Membership { get; set; }
+       // public List<MemberPayment> Membership { get; set; }
 
     }
 }

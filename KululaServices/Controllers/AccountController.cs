@@ -19,9 +19,14 @@ using KululaServices.Results;
 using System.Web.Http.Description;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Net;
+using System.Data.Entity;
+using System.Net.Mail;
+using static KululaServices.Models.ApplicationDbContext;
 
 namespace KululaServices.Controllers
 {
+ 
     [Authorize]
     [RoutePrefix("api/Account")]
     public class AccountController : ApiController
@@ -326,12 +331,13 @@ namespace KululaServices.Controllers
         [Route("Register")]
         public async Task<IHttpActionResult> Register(RegisterBindingModel model)
         {
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var user = new ApplicationUser() { UserName = model.Email, Email = model.Email };
+            var user = new ApplicationUser() { UserName = model.Email, Email = model.Email};
 
             IdentityResult result = await UserManager.CreateAsync(user, model.Password);
 
@@ -339,7 +345,7 @@ namespace KululaServices.Controllers
             {
                 return GetErrorResult(result);
             }
-
+           
             return Ok();
         }
         // POST api/Account/Details
@@ -351,35 +357,174 @@ namespace KululaServices.Controllers
         
         public IHttpActionResult ClientDetails(Client ClientDetails)
         {
-            int brk = 0;
+            
             if (!ModelState.IsValid)
+            {
+               return BadRequest(ModelState);
+            }
+
+            dbClient.clients.Add(ClientDetails);
+            dbClient.SaveChanges();
+            ApplicationUser appUser = new ApplicationUser();
+            appUser.ActivationCode = Guid.NewGuid();
+            using (ApplicationDbContext dc = new ApplicationDbContext())
+            {
+                dc.Configuration.ValidateOnSaveEnabled = false;
+                var v = dc.Users.Where(a => a.UserName == ClientDetails.Email).FirstOrDefault();
+                if (v != null)
+                {
+                    v.ActivationCode = appUser.ActivationCode;
+                    dc.SaveChanges();
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            
+            string getExmsg = "";
+            string OTP = "";
+            SendVerificationLink(ClientDetails.Email,ref getExmsg,ref OTP);
+
+            if(getExmsg != "")
+            {
+                return BadRequest(getExmsg);
+            }
+            else
+            {
+                AccountVerificationModel verificationModel = new AccountVerificationModel();
+                verificationModel.OTP = OTP;
+                verificationModel.ActivationC = appUser.ActivationCode.ToString();
+                return Ok(verificationModel);
+            }
+            
+            //return CreatedAtRoute("DefaultApi", new { id = ClientDetails.ClientID }, ClientDetails);
+        }
+        //Put api/Account/Details/modify/{id}
+        [Route("Details/modify/{id}")]
+        [AllowAnonymous]
+        [ResponseType(typeof(void))]
+        public IHttpActionResult PutClient(int id, Client client)
+        {
+            if (!ModelState.IsValid && id <= 0)
             {
                 return BadRequest(ModelState);
             }
 
-            dbClient.clients.Add(ClientDetails);
+            client.ClientID = id;
+            dbClient.Entry(client).State = EntityState.Modified;
+
             try
             {
                 dbClient.SaveChanges();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateConcurrencyException)
             {
-                if (ClientExists(ClientDetails.Email))
+                if (!ClientExists(id))
                 {
-                    return Conflict();
+                    return NotFound();
                 }
                 else
                 {
                     throw;
                 }
             }
-            
-            return CreatedAtRoute("DefaultApi", new { id = ClientDetails.Email }, ClientDetails);
+
+            return StatusCode(HttpStatusCode.NoContent);
         }
-        private bool ClientExists(string id)
+
+        //Get api/Account/Details/get/{id}
+        [Route("Details/get/{id}")]
+        [ResponseType(typeof(Client))]
+        public IHttpActionResult GetClient(int id)
         {
-            return dbClient.clients.Count(e => e.Email == id) > 0;
+            string CurrentUser = null;
+            if (HttpContext.Current.User.Identity.Name != null) CurrentUser = HttpContext.Current.User.Identity.Name.ToString();
+            Client client = dbClient.clients.Where(d => d.Email.ToString() == CurrentUser).FirstOrDefault();
+            if (client == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(client);
         }
+
+        [NonAction]
+        public void SendVerificationLink(string emailID,ref string exMsg,ref string GetOTP)
+        {
+            //var verifyUrl = "/api/Account/VerifyAccount/" + activationCode;
+            //string link = Request.RequestUri.AbsoluteUri.Replace(Request.RequestUri.PathAndQuery, verifyUrl);
+            Random random = new Random();
+            var OTP = random.Next(100, 900).ToString();
+
+            var fromEmail = new MailAddress("successngw@gmail.com", "Kulula Dotnet");
+            var toEmail = new MailAddress(emailID);
+            var fromEmailPassword ="Makgate19";
+
+            string subject = "Your Kulula account is successfully created!";
+            string body = "<br/><br/>Your kulula account is " + "Successfully created Please use the following OTP to verify your account" +
+                         "<br/><br/> OTP "+OTP;
+         
+            var smtp = new SmtpClient
+            {
+                Host = "smtp.gmail.com",
+                Port = 587,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = true,
+                Credentials = new NetworkCredential(fromEmail.Address, fromEmailPassword)
+            };
+            using(var message = new MailMessage(fromEmail, toEmail)
+            {
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = true
+            })
+     
+            try
+            {
+                 smtp.Send(message);
+                 GetOTP = OTP;
+            }
+            catch(Exception e)
+            {
+                exMsg = e.Message.ToString();
+                GetOTP = null;
+            }
+                
+        }
+
+        //Get api/Account/VerifyAccount/{id}
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("VerifyAccount/{id}")]
+        public IHttpActionResult VerifyAccount(string id)
+        {
+            
+            var response = Request.CreateResponse(HttpStatusCode.Moved);
+            using (ApplicationDbContext dc = new ApplicationDbContext())
+            {
+                dc.Configuration.ValidateOnSaveEnabled = false;
+                var v = dc.Users.Where(a => a.ActivationCode == new Guid(id)).FirstOrDefault();
+                if (v != null)
+                {
+                    v.EmailConfirmed = true;
+                    dc.SaveChanges();
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }          
+           // response.Headers.Location = new Uri("http://localhost:4200/home");
+            //return response;
+        }
+        private bool ClientExists(int id)
+        {
+            return dbClient.clients.Count(e => e.ClientID == id) > 0;
+        } 
+
 
         // POST api/Account/RegisterExternal
         [OverrideAuthentication]
