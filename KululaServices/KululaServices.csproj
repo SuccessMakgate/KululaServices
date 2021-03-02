@@ -25,6 +25,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -83,6 +84,26 @@
     </Reference>
     <Reference Include="Microsoft.Owin.Cors, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Cors.4.0.0\lib\net451\Microsoft.Owin.Cors.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MigraDoc.DocumentObjectModel, Version=1.32.4334.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp-MigraDoc-GDI.1.32.4334.0\lib\net20\MigraDoc.DocumentObjectModel.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MigraDoc.Rendering, Version=1.32.4334.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp-MigraDoc-GDI.1.32.4334.0\lib\net20\MigraDoc.Rendering.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MigraDoc.RtfRendering, Version=1.32.4334.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp-MigraDoc-GDI.1.32.4334.0\lib\net20\MigraDoc.RtfRendering.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PdfSharp, Version=1.32.3057.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp-MigraDoc-GDI.1.32.4334.0\lib\net20\PdfSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PdfSharp.Charting, Version=1.32.3057.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp-MigraDoc-GDI.1.32.4334.0\lib\net20\PdfSharp.Charting.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -249,37 +270,30 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\AircraftController.cs" />
     <Compile Include="Controllers\CarhiresController.cs" />
-    <Compile Include="Controllers\CarModelsController.cs" />
+    <Compile Include="Controllers\DashboardsController.cs" />
     <Compile Include="Controllers\FlightBooksController.cs" />
-    <Compile Include="Controllers\FlightSchedulesController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\MemberPaymentsController.cs" />
     <Compile Include="Controllers\PaymentsController.cs" />
-    <Compile Include="Controllers\SeatBookingsController.cs" />
-    <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\kulula_V1\201810201929237_InitialCreate.cs" />
-    <Compile Include="Migrations\kulula_V1\201810201929237_InitialCreate.Designer.cs">
-      <DependentUpon>201810201929237_InitialCreate.cs</DependentUpon>
+    <Compile Include="Migrations\Identity\202012200702243_InitialIdentity.cs" />
+    <Compile Include="Migrations\Identity\202012200702243_InitialIdentity.Designer.cs">
+      <DependentUpon>202012200702243_InitialIdentity.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\kulula_V1\201810221700088_InitialCreate1.cs" />
-    <Compile Include="Migrations\kulula_V1\201810221700088_InitialCreate1.Designer.cs">
-      <DependentUpon>201810221700088_InitialCreate1.cs</DependentUpon>
+    <Compile Include="Migrations\Identity\Configuration.cs" />
+    <Compile Include="Migrations\kulula_V4\202012171844531_InitialCreate.cs" />
+    <Compile Include="Migrations\kulula_V4\202012171844531_InitialCreate.Designer.cs">
+      <DependentUpon>202012171844531_InitialCreate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\kulula_V1\201810221836315_InitialCreate2.cs" />
-    <Compile Include="Migrations\kulula_V1\201810221836315_InitialCreate2.Designer.cs">
-      <DependentUpon>201810221836315_InitialCreate2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\kulula_V1\Configuration.cs" />
+    <Compile Include="Migrations\kulula_V4\Configuration.cs" />
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Aircraft.cs" />
     <Compile Include="Models\Carhire.cs" />
     <Compile Include="Models\Client.cs" />
+    <Compile Include="Models\GeneratePdf.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\kululaContext.cs" />
     <Compile Include="Models\Payment.cs" />
@@ -333,7 +347,9 @@
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -362,14 +378,11 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\kulula_V1\201810201929237_InitialCreate.resx">
-      <DependentUpon>201810201929237_InitialCreate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\Identity\202012200702243_InitialIdentity.resx">
+      <DependentUpon>202012200702243_InitialIdentity.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\kulula_V1\201810221700088_InitialCreate1.resx">
-      <DependentUpon>201810221700088_InitialCreate1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\kulula_V1\201810221836315_InitialCreate2.resx">
-      <DependentUpon>201810221836315_InitialCreate2.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\kulula_V4\202012171844531_InitialCreate.resx">
+      <DependentUpon>202012171844531_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

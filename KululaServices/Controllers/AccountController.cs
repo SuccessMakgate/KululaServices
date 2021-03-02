@@ -457,9 +457,9 @@ namespace KululaServices.Controllers
             Random random = new Random();
             var OTP = random.Next(100, 900).ToString();
 
-            var fromEmail = new MailAddress("emailHere", "Kulula Dotnet");
+            var fromEmail = new MailAddress("successngw@gmail.com", "Kulula Dotnet");
             var toEmail = new MailAddress(emailID);
-            var fromEmailPassword ="passwordHere";
+            var fromEmailPassword ="Makgate19";
 
             string subject = "Your Kulula account is successfully created!";
             string body = "<br/><br/>Your kulula account is " + "Successfully created Please use the following OTP to verify your account" +
